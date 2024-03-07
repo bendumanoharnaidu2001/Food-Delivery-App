@@ -26,7 +26,6 @@ public class UserController {
     }
     @PostMapping("/assign-delivery-partner")
     public ResponseEntity<Long> assignDeliveryPartner(@RequestBody Location location) {
-
         return new ResponseEntity<>(userService.assignPartner(location), HttpStatus.OK);
     }
 }

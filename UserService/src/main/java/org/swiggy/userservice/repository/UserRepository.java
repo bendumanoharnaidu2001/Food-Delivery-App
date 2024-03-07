@@ -8,9 +8,11 @@ import org.swiggy.userservice.model.enums.Status;
 import org.swiggy.userservice.model.enums.UserType;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<Users, Long> {
     @Query("SELECT u FROM Users u WHERE u.location.city = :city and u.status = :status and u.userType = :userType")
     List<Users> findByCity(String city, Status status, UserType userType);
+    Optional<Users> findByUsername(String username);
 }
