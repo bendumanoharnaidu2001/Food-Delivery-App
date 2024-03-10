@@ -1,7 +1,7 @@
-package org.swiggy.userservice.dto;
+package org.swiggy.orderservice.dto.request;
 
 import lombok.Data;
-import org.swiggy.userservice.model.enums.UserType;
+import org.swiggy.orderservice.dto.enums.UserType;
 
 @Data
 public class ValidateTokenRequest {

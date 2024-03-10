@@ -8,6 +8,7 @@ import org.swiggy.orderservice.dto.request.MenuItemIdsRequest;
 import org.swiggy.orderservice.dto.request.OrderRequest;
 import org.swiggy.orderservice.dto.response.MenuItemListResponse;
 import org.swiggy.orderservice.dto.response.OrderResponse;
+import org.swiggy.orderservice.model.Location;
 import org.swiggy.orderservice.model.MenuItem;
 import org.swiggy.orderservice.model.MenuOrder;
 import org.swiggy.orderservice.model.OrderStatus;
@@ -30,6 +31,16 @@ public class OrderServiceImpl implements OrderService {
         List<Long> menuItemIds = request.getMenuItems().stream().map(MenuItem::getId).collect(Collectors.toList());
         MenuItemIdsRequest menuItemIdsRequest = MenuItemIdsRequest.builder().menuItemIds(menuItemIds).restaurantId(request.getRestaurantId()).build();
         ResponseEntity<MenuItemListResponse> response = restTemplate.postForEntity(url, menuItemIdsRequest, MenuItemListResponse.class);
+
+        Double totalBill = calculateTotalBill(request, response);
+
+        MenuOrder menuOrder = getMenuOrder(request,restTemplate, response, totalBill);
+
+        orderRepository.save(menuOrder);
+        return OrderResponse.builder().message("Order placed successfully").build();
+    }
+
+    private static Double calculateTotalBill(OrderRequest request, ResponseEntity<MenuItemListResponse> response) {
         HashMap<Long,Integer> map = new HashMap<>();
         for(MenuItem menuItem : request.getMenuItems()) {
             map.put(menuItem.getId(),map.getOrDefault(menuItem.getId(),0)+menuItem.getQuantity());
@@ -41,15 +52,24 @@ public class OrderServiceImpl implements OrderService {
                 totalBill.updateAndGet(v -> (v + menuItem.getPrice() * menuItem.getQuantity()));
             }
         });
+        return totalBill.get();
+    }
+
+    private static MenuOrder getMenuOrder(OrderRequest request, RestTemplate restTemplate, ResponseEntity<MenuItemListResponse> response, Double totalBill) {
+        String url;
         url = "http://localhost:8080/users/assign-delivery-partner";
         Long deliveryPartnerId = restTemplate.postForEntity(url, response.getBody().getRestaurantLocation(), Long.class).getBody();
 
         MenuOrder menuOrder = MenuOrder.builder().userId(request.getUserId()).menuItems(response.getBody().getMenuItems())
-                .restaurantId(request.getRestaurantId()).totalPrice(totalBill.get())
+                .restaurantId(request.getRestaurantId()).totalPrice(totalBill)
                 .deliveryExecutiveId(deliveryPartnerId)
                 .createdTime(LocalDateTime.now()).build();
-        orderRepository.save(menuOrder);
-        return OrderResponse.builder().message("Order placed successfully").build();
+        url = "http://localhost:8080/users/userDetails/"+ request.getUserId();
+        ResponseEntity<Location> locationResponse = restTemplate.getForEntity(url, Location.class);
+        if (locationResponse.getBody() != null) {
+            menuOrder.setUserLocation(locationResponse.getBody());
+        }
+        return menuOrder;
     }
 
     @Override
