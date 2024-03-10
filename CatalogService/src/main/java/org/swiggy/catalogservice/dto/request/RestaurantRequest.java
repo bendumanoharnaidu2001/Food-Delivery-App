@@ -8,6 +8,8 @@ import java.util.List;
 
 @Data
 public class RestaurantRequest {
+    String email;
+    String token;
     String name;
     Location location;
     List<MenuItem> menuItems;

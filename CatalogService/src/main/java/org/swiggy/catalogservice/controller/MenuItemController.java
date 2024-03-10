@@ -11,19 +11,28 @@ import org.swiggy.catalogservice.dto.response.MenuItemListResponse;
 import org.swiggy.catalogservice.dto.response.MenuItemResponse;
 import org.swiggy.catalogservice.execptions.RestaurantNotFoundException;
 import org.swiggy.catalogservice.service.MenuItemService;
+import org.swiggy.catalogservice.util.UserUtils;
 
 @RestController
 @RequestMapping("/menu-items")
 public class MenuItemController {
     @Autowired
     private MenuItemService menuItemService;
+    @Autowired
+    private UserUtils userUtils;
     @PostMapping("/{restaurantId}")
     public ResponseEntity<MenuItemResponse> addMenuItems(@PathVariable("restaurantId") Long restaurantId, @RequestBody MenuItemListRequest request) {
+        if(!userUtils.validateToken(request.getEmail(), request.getToken())) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         MenuItemResponse response = menuItemService.addMenuItem(restaurantId, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     @PutMapping("/{itemId}")
     public ResponseEntity<MenuItemResponse> updateMenuItem(@PathVariable("itemId") Long itemId, @RequestBody MenuItemRequest request) {
+        if(!userUtils.validateToken(request.getEmail(), request.getToken())) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         MenuItemResponse response = menuItemService.updateMenuItem(itemId, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

@@ -1,4 +1,4 @@
-package org.swiggy.userservice.model.enums;
+package org.swiggy.catalogservice.dto.enums;
 
 public enum UserType {
     CUSTOMER,
