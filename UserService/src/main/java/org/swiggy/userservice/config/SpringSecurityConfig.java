@@ -14,7 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SpringSecurityConfig {
     @Bean
     public static PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
@@ -22,8 +22,11 @@ public class SpringSecurityConfig {
 
         http.csrf().disable()
                 .authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers(HttpMethod.POST,"/users/").permitAll().
-                            requestMatchers("/users/assign-delivery-partner").permitAll().
+                    authorize.requestMatchers(HttpMethod.POST,"/users/**").permitAll().
+                            requestMatchers(HttpMethod.POST,"/users/login").permitAll().
+                            requestMatchers(HttpMethod.POST,"/users/verify").permitAll().
+                            requestMatchers(HttpMethod.POST,"/users/assign-delivery-partner").permitAll().
+                            requestMatchers(HttpMethod.GET,"/users/userDetails/**").permitAll().
                             anyRequest().authenticated();
                 }).
                 headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)).httpBasic(Customizer.withDefaults());

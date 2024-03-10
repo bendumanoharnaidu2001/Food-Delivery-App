@@ -8,6 +8,7 @@ import org.swiggy.userservice.model.enums.UserType;
 public class UserRequest {
     private String username;
     private String password;
+    private String email;
     private String contactNumber;
     private Location location;
     private UserType userType;
