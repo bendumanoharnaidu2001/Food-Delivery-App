@@ -1,16 +1,16 @@
 package org.swiggy.userservice.service;
 
+import fulfilmentservicegrpc.AssignDelivery;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.swiggy.userservice.config.SpringSecurityConfig;
 import org.swiggy.userservice.dto.DeliveryExecutiveRequest;
 import org.swiggy.userservice.dto.UserRequest;
 import org.swiggy.userservice.dto.UserResponse;
 import org.swiggy.userservice.dto.ValidateTokenRequest;
+import org.swiggy.userservice.grpcClient.AssignDeliveryPartnerGrpcClient;
 import org.swiggy.userservice.model.dto.Location;
 import org.swiggy.userservice.model.entites.Token;
 import org.swiggy.userservice.model.entites.Users;
@@ -85,11 +85,13 @@ public class UserServiceImpl implements UserService {
         List<Users> deliveryPartners = userRepository.findByCity(location.getCity(), Status.ACTIVE, UserType.DELIVERY_EXECUTIVE);
         RestTemplate restTemplate = new RestTemplate();
         DeliveryExecutiveRequest request = DeliveryExecutiveRequest.builder().restaurantLocation(location).deliveryPartners(deliveryPartners).build();
-        Long deliveryPartnerId = restTemplate.postForEntity("http://localhost:8083/deliveries", request, Long.class).getBody();
-        Users deliveryPartner = userRepository.findById(deliveryPartnerId).orElse(null);
+        //Call Fulfilment service to get the nearest delivery partner
+//       Long deliveryPartnerId = restTemplate.postForEntity("http://localhost:8083/deliveries", request, Long.class).getBody();
+        AssignDelivery.DeliveryPartnerResponse deliveryPartnerId = AssignDeliveryPartnerGrpcClient.assignDeliveryPartner(location, deliveryPartners);
+        Users deliveryPartner = userRepository.findById(deliveryPartnerId.getId()).orElse(null);
         deliveryPartner.setStatus(Status.OCCUPIED);
         userRepository.save(deliveryPartner);
-        return deliveryPartnerId;
+        return deliveryPartnerId.getId();
     }
 
     @Override
