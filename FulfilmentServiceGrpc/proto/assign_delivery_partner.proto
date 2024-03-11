@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package fulfilmentservicegrpc;
+
+option go_package = "/fulfilmentservicegrpc";
+
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message DeliveryPartner {
+  int64 id = 1;
+  Location location = 2;
+}
+
+message DeliveryExecutiveRequest {
+  Location restaurant_location = 1;
+  repeated DeliveryPartner delivery_partners = 2;
+}
+
+service DeliveryService {
+  rpc GetNearestDeliveryPartner(DeliveryExecutiveRequest) returns (DeliveryPartnerResponse);
+}
+
+message DeliveryPartnerResponse {
+  int64 id = 1;
+}
