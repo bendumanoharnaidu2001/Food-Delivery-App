@@ -15,21 +15,6 @@ import java.util.List;
 public class AssignDeliveryPartnerGrpcClient {
     private final static Logger log = LoggerFactory.getLogger(AssignDeliveryPartnerGrpcClient.class);
 
-//    public static AssignDelivery.DeliveryPartnerResponse convertCurrency(Location location, List<Users> deliveryPartners) {
-//
-//        ConverterGrpc.ConverterBlockingStub stub = ConverterGrpc.newBlockingStub(channel);
-//        ConvertRequest request = ConvertRequest.newBuilder()
-//                .setBaseCurrency(baseCurrency)
-//                .setTargetCurrency(targetCurrency)
-//                .setAmount(amount)
-//                .build();
-//
-//        ConvertResponse response = stub.convertCurrency(request);
-//        log.info("Server message: {}",response);
-//        channel.shutdown();
-//        return response;
-//    }
-
     public static AssignDelivery.DeliveryPartnerResponse assignDeliveryPartner(Location location, List<Users> deliveryPartners) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9090)
                 .usePlaintext()
@@ -53,9 +38,7 @@ public class AssignDeliveryPartnerGrpcClient {
                             .setLongitude(user.getLocation().getLongitude())
                             .build())
                     .build();
-//            AssignDelivery.DeliveryExecutiveRequest request = AssignDelivery.DeliveryExecutiveRequest.newBuilder()
-//                    .setDeliveryPartners(i, deliveryPartner)
-//                    .build();
+
             request = request.toBuilder().addDeliveryPartners(i, deliveryPartner).build();
         }
 
